@@ -1,0 +1,5 @@
+name: intimacy
+author: deepseekbot
+desc: 好感度养成系统：结构化存储好感度，支持投喂/抚摸/聊天涨好感、状态卡查询
+version: 1.0.0
+repo: https://github.com/deepseekbot/intimacy

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深海小鲸 · 桌宠模式</title>
+<style>
+  :root {
+    --bg: #08111f;
+    --bg2: #0c1c30;
+    --cyan: #4fc3f7;
+    --teal: #2dd4bf;
+    --text: #e8f1f8;
+    --muted: #9db4c8;
+    --pink: #ffb3c1;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    background: radial-gradient(1000px 600px at 50% -10%, #123a63 0%, transparent 55%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    overflow-x: hidden;
+  }
+  .stage { width: 100%; max-width: 860px; }
+
+  /* 顶部状态条 */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .title { font-size: 20px; font-weight: 700; }
+  .title span { color: var(--cyan); }
+  .lock-tag {
+    font-size: 13px; padding: 5px 14px; border-radius: 999px;
+    border: 1px solid rgba(90,180,230,.25); background: rgba(255,255,255,.05);
+    color: var(--muted);
+  }
+  .lock-tag.on { color: var(--teal); border-color: rgba(45,212,191,.4); background: rgba(45,212,191,.1); }
+
+  /* 好感度条 */
+  .bar-wrap { margin-bottom: 26px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .bar { height: 12px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+  .bar i {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--teal));
+    border-radius: 999px; transition: width .5s ease;
+  }
+  .threshold { text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* 桌面区域 */
+  .desktop {
+    position: relative; height: 340px; border-radius: 20px;
+    border: 1px solid rgba(90,180,230,.15); background: rgba(12,28,48,.4);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .sea-surface {
+    position: absolute; left: 0; right: 0; top: 0; height: 6px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: .5;
+  }
+  .whale { position: relative; transition: transform .6s ease, opacity .6s ease, filter .6s ease; }
+  .whale.locked { opacity: .35; filter: blur(3px) grayscale(.4); transform: translateY(60px); }
+  .whale.unlocked { opacity: 1; filter: none; transform: translateY(0); }
+  .whale svg { width: 220px; height: auto; display: block; }
+  .whale.unlocked svg { animation: floaty 3.2s ease-in-out infinite; }
+  .tail-group { transform-origin: 175px 80px; }
+  .whale.unlocked .tail-group { animation: wag 2.4s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes wag { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
+
+  .bubble {
+    position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,.08); border: 1px solid rgba(90,180,230,.25);
+    padding: 10px 16px; border-radius: 12px; font-size: 13px; color: var(--text);
+    opacity: 0; transition: opacity .4s ease; max-width: 80%; text-align: center;
+  }
+  .bubble.show { opacity: 1; }
+
+  .locked-msg {
+    position: absolute; bottom: 20px; left: 0; right: 0; text-align: center;
+    font-size: 13px; color: var(--muted);
+  }
+  .locked-msg b { color: var(--cyan); }
+
+  /* 互动区 */
+  .panel {
+    display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;
+  }
+  .btn {
+    flex: 1; min-width: 110px; padding: 13px 18px; border-radius: 12px;
+    font-size: 15px; font-weight: 600; cursor: pointer; border: 1px solid var(--border, rgba(90,180,230,.2));
+    background: rgba(255,255,255,.04); color: var(--text); transition: .15s;
+  }
+  .btn:hover { background: rgba(255,255,255,.1); transform: translateY(-2px); }
+  .btn.primary { background: linear-gradient(90deg, var(--cyan), var(--teal)); color: #06202e; border: none; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  /* 聊天框 */
+  .chat {
+    margin-top: 16px; background: rgba(12,28,48,.55); border: 1px solid rgba(90,180,230,.18);
+    border-radius: 16px; padding: 16px; display: none;
+  }
+  .chat.open { display: block; }
+  .msgs { max-height: 180px; overflow-y: auto; margin-bottom: 12px; }
+  .msg { display: flex; margin-bottom: 10px; }
+  .msg.me { justify-content: flex-end; }
+  .bub {
+    max-width: 74%; padding: 9px 13px; border-radius: 13px; font-size: 14px; line-height: 1.6;
+  }
+  .msg.whale .bub { background: #142a44; border-bottom-left-radius: 4px; }
+  .msg.me .bub { background: #1f6feb; color: #fff; border-bottom-right-radius: 4px; }
+  .chat-input { display: flex; gap: 10px; }
+  .chat-input input {
+    flex: 1; padding: 11px 14px; border-radius: 10px; border: 1px solid rgba(90,180,230,.2);
+    background: rgba(255,255,255,.05); color: var(--text); font-size: 14px; outline: none;
+  }
+  .chat-input input:focus { border-color: var(--cyan); }
+  .chat-input button {
+    padding: 0 20px; border-radius: 10px; border: none; cursor: pointer;
+    background: var(--cyan); color: #06202e; font-weight: 600; font-size: 14px;
+  }
+
+  /* 演示滑块 */
+  .demo {
+    margin-top: 22px; padding: 14px 16px; border-radius: 12px;
+    background: rgba(255,255,255,.03); border: 1px dashed rgba(90,180,230,.2);
+    font-size: 13px; color: var(--muted);
+  }
+  .demo input { width: 100%; margin-top: 8px; accent-color: var(--cyan); }
+  .demo b { color: var(--cyan); }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="topbar">
+    <div class="title">深海<span>小鲸</span> · 桌宠模式</div>
+    <div class="lock-tag" id="lockTag">🔒 尚未解锁桌宠</div>
+  </div>
+
+  <div class="bar-wrap">
+    <div class="bar-label"><span>好感度</span><span id="num">0 / 100</span></div>
+    <div class="bar"><i id="fill"></i></div>
+    <div class="threshold">解锁桌宠需要好感度达到 <b style="color:var(--teal)">60</b></div>
+  </div>
+
+  <div class="desktop">
+    <div class="sea-surface"></div>
+    <div class="whale locked" id="whale">
+      <svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+        <g class="tail-group">
+          <path d="M160 82 Q 186 54 206 62 Q 192 80 206 100 Q 186 108 160 82 Z" fill="#2e8fc0"/>
+        </g>
+        <ellipse cx="95" cy="82" rx="80" ry="52" fill="#4fc3f7"/>
+        <ellipse cx="100" cy="104" rx="50" ry="26" fill="#b3e5fc"/>
+        <circle cx="66" cy="70" r="5.5" fill="#0a1628"/>
+        <circle cx="68" cy="68" r="2" fill="#fff"/>
+        <circle cx="82" cy="88" r="6.5" fill="#ffb3c1" opacity=".8"/>
+        <path d="M58 90 Q 68 98 80 90" stroke="#0a1628" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <circle cx="42" cy="26" r="3.4" fill="#4fc3f7"/>
+        <circle cx="52" cy="17" r="2.6" fill="#81d4fa"/>
+        <circle cx="32" cy="17" r="2.2" fill="#81d4fa"/>
+        <circle cx="60" cy="10" r="2" fill="#81d4fa"/>
+      </svg>
+      <div class="bubble" id="bubble">哼，你终于把我养出来了。</div>
+    </div>
+    <div class="locked-msg" id="lockedMsg">🔒 她还在深海里，去 QQ 里养她，好感度到 60 才能游到你的桌面</div>
+  </div>
+
+  <div class="panel">
+    <button class="btn" id="touchBtn" disabled>🤚 摸摸头 (+3)</button>
+    <button class="btn" id="feedBtn" disabled>🐟 投喂小鱼干 (+5)</button>
+    <button class="btn primary" id="chatBtn" disabled>💬 和她聊天</button>
+  </div>
+
+  <div class="chat" id="chat">
+    <div class="msgs" id="msgs"></div>
+    <div class="chat-input">
+      <input type="text" id="input" placeholder="和小鲸说点什么…" maxlength="60">
+      <button id="send">发送</button>
+    </div>
+  </div>
+
+  <div class="demo">
+    演示控制：拖动滑块模拟"在 QQ 里养她"的过程，看好感度怎么解锁桌宠。
+    <input type="range" id="slider" min="0" max="100" value="0">
+  </div>
+
+  <div class="demo" style="border-style:solid; border-color:rgba(45,212,191,.25);">
+    <b>桌宠形象 & 技术：</b>本演示用简单鲸鱼示意；正式桌宠直接使用开源插件
+    <b>dsh-pet</b>（DeepSeek「大肥鱼 · 鲸鱼娘」桌宠，100+ 透明动画、物理交互、AI 对话）。
+    安装：Windows 解压 <b>dsh-pet-win-x64.zip</b> 双击 exe（独立模式），或 DSH 里 <code>dsh plugin add dsh-pet</code>。
+    <br>出处：溟月（B站@上善无形）· DeepSeek 鲸鱼娘（B站@ZipZipPipe）｜协议 CC BY-NC-SA 4.0（署名·非商业·相同方式共享）
+    <a href="https://github.com/PC2005-cloud/dsh-pet" style="color:var(--teal)">github.com/PC2005-cloud/dsh-pet</a>
+    <br><b>QQ 联动：</b>配合 <b>pet_bridge</b> 插件，你在 QQ 里和机器人聊天时，桌宠会实时弹气泡展示自己的回复（演示：解锁后在下方「和她聊天」试试）。
+  </div>
+
+</div>
+
+<script>
+  const KEY = "whale_intimacy";
+  let intimacy = parseInt(localStorage.getItem(KEY) || "0", 10);
+
+  const whale = document.getElementById("whale");
+  const bubble = document.getElementById("bubble");
+  const lockTag = document.getElementById("lockTag");
+  const lockedMsg = document.getElementById("lockedMsg");
+  const fill = document.getElementById("fill");
+  const num = document.getElementById("num");
+  const slider = document.getElementById("slider");
+  const touchBtn = document.getElementById("touchBtn");
+  const feedBtn = document.getElementById("feedBtn");
+  const chatBtn = document.getElementById("chatBtn");
+  const chat = document.getElementById("chat");
+  const msgs = document.getElementById("msgs");
+  const input = document.getElementById("input");
+  const send = document.getElementById("send");
+
+  const REPLIES = [
+    "哼，知道来找我啦？",
+    "才、才没有想你呢！",
+    "你喂我小鱼干，我就勉强理你一下。",
+    "今天也在想你……一点点而已。",
+    "谁要你摸头啊，……再摸一下也不是不行。",
+    "我在海底数贝壳呢，数到一半被你叫上来了。",
+    "干嘛啦，这么晚还不睡。",
+    "你再不来，我都要忘了你长什么样了。",
+  ];
+
+  function render() {
+    fill.style.width = intimacy + "%";
+    num.textContent = intimacy + " / 100";
+    const unlocked = intimacy >= 60;
+    whale.classList.toggle("locked", !unlocked);
+    whale.classList.toggle("unlocked", unlocked);
+    lockTag.textContent = unlocked ? "✨ 桌宠已解锁" : "🔒 尚未解锁桌宠";
+    lockTag.classList.toggle("on", unlocked);
+    lockedMsg.style.display = unlocked ? "none" : "block";
+    touchBtn.disabled = !unlocked;
+    feedBtn.disabled = !unlocked;
+    chatBtn.disabled = !unlocked;
+    if (!unlocked) chat.classList.remove("open");
+  }
+
+  function gain(n, word) {
+    intimacy = Math.min(100, intimacy + n);
+    localStorage.setItem(KEY, String(intimacy));
+    slider.value = intimacy;
+    render();
+    say(word);
+  }
+
+  function say(text) {
+    bubble.textContent = text;
+    bubble.classList.add("show");
+    clearTimeout(window._bt);
+    window._bt = setTimeout(() => bubble.classList.remove("show"), 2200);
+  }
+
+  function addMsg(text, who) {
+    const d = document.createElement("div");
+    d.className = "msg " + who;
+    const b = document.createElement("div");
+    b.className = "bub";
+    b.textContent = text;
+    d.appendChild(b);
+    msgs.appendChild(d);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  slider.addEventListener("input", () => {
+    intimacy = parseInt(slider.value, 10);
+    localStorage.setItem(KEY, String(intimacy));
+    render();
+    if (intimacy >= 60 && intimacy < 63) say("……是你吗？我从海里游上来了。");
+  });
+
+  touchBtn.addEventListener("click", () => gain(3, "……别、别乱摸！……再摸一下也不是不行。"));
+  feedBtn.addEventListener("click", () => gain(5, "小鱼干！算你懂我。"));
+  chatBtn.addEventListener("click", () => {
+    chat.classList.toggle("open");
+    if (chat.classList.contains("open") && msgs.children.length === 0) {
+      addMsg("你把我叫上来，是有话要说吗？", "whale");
+    }
+  });
+
+  send.addEventListener("click", () => sendMsg());
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") sendMsg(); });
+
+  function sendMsg() {
+    const t = input.value.trim();
+    if (!t) return;
+    addMsg(t, "me");
+    input.value = "";
+    gain(2, "");
+    setTimeout(() => {
+      const r = REPLIES[Math.floor(Math.random() * REPLIES.length)];
+      addMsg(r, "whale");
+    }, 500);
+  }
+
+  slider.value = intimacy;
+  render();
+</script>
+</body>
+</html>

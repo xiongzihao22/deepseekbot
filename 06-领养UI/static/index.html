@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深海小鲸 · 领养向导</title>
+<style>
+  :root {
+    --bg-deep: #06121f;
+    --bg-mid: #0a2038;
+    --bg-card: rgba(13, 43, 74, 0.55);
+    --teal: #4fd1c5;
+    --teal-bright: #7ff0e0;
+    --blue: #63b3ed;
+    --blue-soft: #a8d4f5;
+    --text: #d8e9f6;
+    --text-dim: #8fb3cf;
+    --gold: #ffd98a;
+    --danger: #ff8a8a;
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(38, 96, 148, 0.35), transparent 60%),
+      linear-gradient(180deg, #071a2e 0%, #0a2540 45%, #06121f 100%);
+    color: var(--text);
+    overflow: hidden;
+    min-height: 100vh;
+  }
+
+  /* ---------- 背景气泡 ---------- */
+  #bubbles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  /* ---------- 场景容器 ---------- */
+  .scene {
+    position: fixed; inset: 0; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px;
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .scene.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
+
+  .card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid rgba(127, 240, 224, 0.16);
+    border-radius: 24px;
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+    padding: 44px 40px;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 30px; font-weight: 700; letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--teal-bright), var(--blue));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 30px; }
+
+  /* ---------- 领养蛋 ---------- */
+  .egg-wrap { position: relative; width: 180px; height: 210px; margin: 10px auto 30px; cursor: pointer; }
+  .egg {
+    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 130px; height: 168px;
+    background: radial-gradient(circle at 38% 30%, #dff3ff 0%, #9fd6ef 40%, #4aa8d8 75%, #2f7fb8 100%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.12), 0 24px 50px rgba(0,0,0,0.5), inset -14px -16px 30px rgba(20,70,120,0.5);
+    animation: float 3.4s ease-in-out infinite;
+  }
+  .egg::before {
+    content: ""; position: absolute; left: 26%; top: 22%; width: 26px; height: 38px;
+    background: radial-gradient(circle, rgba(255,255,255,0.85), rgba(255,255,255,0));
+    border-radius: 50%; transform: rotate(-20deg);
+  }
+  .egg-glow {
+    position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%);
+    width: 180px; height: 40px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(79,209,197,0.4), transparent 70%);
+    animation: pulse 2.6s ease-in-out infinite;
+  }
+  .egg-hint { color: var(--text-dim); font-size: 13px; margin-top: 4px; animation: blink 2s infinite; }
+  .egg-hint span { color: var(--teal-bright); }
+
+  @keyframes float { 0%,100%{ transform: translateX(-50%) translateY(0);} 50%{ transform: translateX(-50%) translateY(-12px);} }
+  @keyframes floatUp { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-10px);} }
+  @keyframes pulse { 0%,100%{ opacity:.5; transform: translateX(-50%) scale(1);} 50%{ opacity:1; transform: translateX(-50%) scale(1.15);} }
+  @keyframes blink { 0%,100%{ opacity:.5;} 50%{ opacity:1;} }
+
+  /* 蛋孵化碎裂 */
+  .egg.crack { animation: crack .5s forwards; }
+  @keyframes crack {
+    0% { transform: translateX(-50%) scale(1); }
+    30% { transform: translateX(-50%) scale(1.06) rotate(-3deg); }
+    100% { transform: translateX(-50%) scale(1.15); opacity: 0; }
+  }
+
+  /* ---------- 小鲸鱼（dsh-pet 鲸鱼娘形象） ---------- */
+  .whale { margin: 0 auto 16px; display: flex; justify-content: center; filter: drop-shadow(0 10px 22px rgba(0,0,0,0.45)); animation: floatUp 3.4s ease-in-out infinite; }
+  .whale img { height: 186px; width: auto; display: block; image-rendering: pixelated; }
+
+  /* ---------- 表单 ---------- */
+  .field { text-align: left; margin-bottom: 20px; }
+  .field label { display: block; font-size: 13px; color: var(--blue-soft); margin-bottom: 8px; }
+  .field input {
+    width: 100%; padding: 13px 16px; border-radius: 12px;
+    border: 1px solid rgba(127,240,224,0.22);
+    background: rgba(5, 18, 33, 0.6); color: var(--text);
+    font-size: 15px; outline: none; transition: border .2s, box-shadow .2s;
+  }
+  .field input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(79,209,197,0.15); }
+  .field input::placeholder { color: #5d7d99; }
+  .field .tip { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+  .btn {
+    display: inline-block; padding: 15px 40px; border-radius: 40px; border: none;
+    font-size: 17px; font-weight: 600; cursor: pointer; letter-spacing: 2px;
+    color: #06242a; background: linear-gradient(90deg, var(--teal), var(--blue));
+    box-shadow: 0 10px 30px rgba(79,209,197,0.35);
+    transition: transform .15s, box-shadow .2s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(79,209,197,0.45); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn.ghost { background: transparent; color: var(--blue-soft); border: 1px solid rgba(127,240,224,0.3); box-shadow: none; }
+  .btn-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- 进度 ---------- */
+  .progress-ring { position: relative; width: 140px; height: 140px; margin: 10px auto 26px; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring .track { fill: none; stroke: rgba(127,240,224,0.15); stroke-width: 8; }
+  .progress-ring .bar { fill: none; stroke: url(#grad); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset .5s ease; }
+  .progress-ring .pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; color: var(--teal-bright); }
+
+  .steps { width: 100%; text-align: left; margin-top: 6px; }
+  .step {
+    display: flex; align-items: center; gap: 12px; padding: 11px 14px; margin-bottom: 6px;
+    border-radius: 12px; background: rgba(5,18,33,0.4);
+    border: 1px solid rgba(127,240,224,0.08);
+    opacity: .45; transition: all .3s;
+  }
+  .step.active { opacity: 1; border-color: rgba(79,209,197,0.45); background: rgba(79,209,197,0.08); }
+  .step.done { opacity: .85; }
+  .step .dot {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--text-dim); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .step.active .dot { border-color: var(--teal); color: var(--teal); animation: spin 1s linear infinite; }
+  .step.done .dot { border-color: var(--teal); background: var(--teal); color: #06242a; animation: none; }
+  .step .dot::after { content: ""; }
+  .step.done .dot::before { content: "✓"; }
+  .step .txt { font-size: 14px; color: var(--text); }
+  .step .txt small { display: block; font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .quote { min-height: 46px; color: var(--blue-soft); font-size: 15px; margin: 16px 0 6px; font-style: italic; }
+
+  .err { color: var(--danger); background: rgba(255,138,138,0.1); border: 1px solid rgba(255,138,138,0.3); border-radius: 12px; padding: 14px; margin-top: 16px; font-size: 14px; }
+
+  /* ---------- 二维码 ---------- */
+  .qr-box {
+    margin: 16px auto; width: 218px; height: 218px;
+    background: #ffffff; border-radius: 16px;
+    display: none; align-items: center; justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    overflow: hidden; position: relative;
+  }
+  .qr-box .qr-hint { color: #16405e; font-size: 13px; padding: 20px; text-align: center; line-height: 1.6; }
+  .qr-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
+  .qr-box .qr-loading {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #16405e; font-size: 13px;
+  }
+
+  .divider { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, var(--teal), transparent); margin: 18px auto; }
+
+  /* ---------- 养成引导 ---------- */
+  .guide { display: flex; flex-direction: column; gap: 12px; text-align: left; margin: 20px 0; }
+  .guide-item {
+    display: flex; align-items: flex-start; gap: 12px; padding: 13px 15px;
+    background: rgba(5,18,33,0.4); border-radius: 12px;
+    border: 1px solid rgba(127,240,224,0.1);
+  }
+  .guide-item .ic { font-size: 22px; flex-shrink: 0; }
+  .guide-item b { color: var(--teal-bright); display: block; font-size: 14px; margin-bottom: 3px; }
+  .guide-item p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+  .backlink { position: fixed; top: 18px; left: 20px; z-index: 2; font-size: 12px; color: var(--text-dim); cursor: pointer; opacity: .7; }
+  .backlink:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<canvas id="bubbles"></canvas>
+<div class="backlink" onclick="resetAll()">← 重新开始</div>
+
+<!-- ============ 场景 1：欢迎 + 领养蛋 ============ -->
+<div class="scene" id="scene-welcome">
+  <div class="card">
+    <h1>深海小鲸</h1>
+    <div class="subtitle">一只会记住你、会傲娇、会长大的 AI 小鲸鱼</div>
+    <div class="egg-wrap" id="eggWrap">
+      <div class="egg" id="egg"></div>
+      <div class="egg-glow"></div>
+    </div>
+    <div class="egg-hint">她正在蛋里沉睡 · <span>点击领养她</span></div>
+  </div>
+</div>
+
+<!-- ============ 场景 2：填写信息 ============ -->
+<div class="scene hidden" id="scene-form">
+  <div class="card">
+    <div class="whale">
+      <img src="/img/shy.gif" alt="深海小鲸">
+    </div>
+    <h1 style="font-size:24px;">领养手续</h1>
+    <div class="subtitle">填两样，剩下的交给我来唤醒她</div>
+    <div class="field">
+      <label>DeepSeek API Key</label>
+      <input id="inp-key" type="text" placeholder="sk-xxxxxxxx（去 platform.deepseek.com 申请）">
+      <div class="tip">你的专属钥匙，只会写进本机配置，不会上传。</div>
+    </div>
+    <div class="field">
+      <label>你的 QQ 号（主人）</label>
+      <input id="inp-qq" type="text" placeholder="她只认你一个主人">
+      <div class="tip">一开始她对你是陌生的（好感度 0），要一点点养熟哦。</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="backToWelcome()">返回</button>
+      <button class="btn" id="btn-adopt" onclick="startAdopt()">正式领养她</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 场景 3：孵化进度 ============ -->
+<div class="scene hidden" id="scene-progress">
+  <div class="card">
+    <h1 style="font-size:24px;">正在唤醒她…</h1>
+    <div class="subtitle" id="prog-stepname">寻找她的深海坐标</div>
+    <div class="progress-ring">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7ff0e0"/><stop offset="100%" stop-color="#63b3ed"/>
+          </linearGradient>
+        </defs>
+        <circle class="track" cx="70" cy="70" r="62"/>
+        <circle class="bar" id="prog-bar" cx="70" cy="70" r="62" stroke-dasharray="389.6" stroke-dashoffset="389.6"/>
+      </svg>
+      <div class="pct" id="prog-pct">0%</div>
+    </div>
+    <div class="quote" id="prog-quote">深海传来微弱的心跳声…</div>
+    <div class="steps" id="prog-steps"></div>
+    <div class="err hidden" id="prog-err"></div>
+  </div>
+</div>
+
+<!-- ============ 场景 4：扫码认领 ============ -->
+<div class="scene hidden" id="scene-scan">
+  <div class="card">
+    <div class="whale">
+      <img src="/img/wave.gif" alt="深海小鲸">
+    </div>
+    <h1 style="font-size:24px;">她睁开眼睛了 ✨</h1>
+    <div class="subtitle">最后一步：用 QQ 小号认领她，让她记住你</div>
+    <div class="guide" style="margin:22px 0;">
+      <div class="guide-item"><div class="ic">①</div><div><b>启动 QQ 协议端</b><p>点击下面按钮，弹出的窗口里会出现二维码。</p></div></div>
+      <div class="guide-item"><div class="ic">②</div><div><b>用 QQ 小号扫码</b><p>建议准备一个小号，扫码后保持登录状态。</p></div></div>
+      <div class="guide-item"><div class="ic">③</div><div><b>启动她的灵魂</b><p>扫码成功后再点「启动 AstrBot」，她的心智就上线了。</p></div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-napcat" onclick="startNapcat()">① 启动 QQ 端</button>
+      <button class="btn" id="btn-astrbot" onclick="startAstrbot()" disabled>② 启动 AstrBot</button>
+    </div>
+    <div class="qr-box" id="qr-box">
+      <div class="qr-hint" id="qr-hint">正在生成二维码…</div>
+      <img id="qr-img" src="" alt="QQ 扫码登录">
+    </div>
+    <div class="tip" id="qr-tip" style="margin-top:12px; color:var(--text-dim); font-size:13px; display:none;">用手机 QQ（小号）扫上面的二维码，确认登录</div>
+    <div class="tip" style="margin-top:10px; font-size:13px; color:var(--text-dim);">
+      二维码刷不出来？<a href="javascript:openNapcatWebui()" style="color:var(--teal-bright);">点这里打开 NapCat 原生扫码页</a>（另一窗口扫码）
+    </div>
+    <div class="tip" style="margin-top:18px; color:var(--text-dim); font-size:13px;">扫完码后回到这里，点②启动她的心智，然后去 QQ 里发一句「你好」。</div>
+    <div class="err hidden" id="scan-err"></div>
+  </div>
+</div>
+
+<!-- ============ 场景 5：完成 ============ -->
+<div class="scene hidden" id="scene-done">
+  <div class="card">
+    <div class="whale">
+      <img src="/img/happy.gif" alt="深海小鲸">
+    </div>
+    <h1>领养成功 🎉</h1>
+    <div class="subtitle">从今天起，她只属于你一个人</div>
+    <div class="guide">
+      <div class="guide-item"><div class="ic">🐟</div><div><b>投喂</b><p>在 QQ 里发「投喂小鱼干」，她会开心，好感 +5。</p></div></div>
+      <div class="guide-item"><div class="ic">🤗</div><div><b>摸摸头</b><p>发「摸摸头」「抱抱」，她会傲娇地躲一下，心里却 +3。</p></div></div>
+      <div class="guide-item"><div class="ic">❤️</div><div><b>查好感度</b><p>发「/好感度」或「/状态卡」，看你们感情的进度。</p></div></div>
+      <div class="guide-item"><div class="ic">🌊</div><div><b>养到 60 分</b><p>好感度到 60，她会游到你的桌面上，成为桌宠。</p></div></div>
+    </div>
+    <button class="btn" onclick="resetAll()">再领养一只？</button>
+  </div>
+</div>
+
+<script>
+// ============ 背景气泡 ============
+const cv = document.getElementById('bubbles');
+const cx = cv.getContext('2d');
+let bubbles = [];
+function resize() { cv.width = innerWidth; cv.height = innerHeight; }
+window.addEventListener('resize', resize); resize();
+for (let i = 0; i < 26; i++) {
+  bubbles.push({ x: Math.random(), y: Math.random(), r: 2 + Math.random()*7, s: 0.2 + Math.random()*0.7, a: 0.15 + Math.random()*0.3 });
+}
+function drawBubbles() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  for (const b of bubbles) {
+    b.y -= b.s * 0.0012;
+    if (b.y < -0.05) { b.y = 1.05; b.x = Math.random(); }
+    cx.beginPath();
+    cx.arc(b.x*cv.width, b.y*cv.height, b.r, 0, Math.PI*2);
+    cx.fillStyle = `rgba(127,240,224,${b.a})`;
+    cx.fill();
+  }
+  requestAnimationFrame(drawBubbles);
+}
+drawBubbles();
+
+// ============ 场景切换 ============
+function show(id) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ============ 领养蛋点击 ============
+document.getElementById('eggWrap').addEventListener('click', () => {
+  const egg = document.getElementById('egg');
+  egg.classList.add('crack');
+  setTimeout(() => show('scene-form'), 480);
+});
+
+function backToWelcome() { show('scene-welcome'); }
+function resetAll() { fetch('/api/reset', {method:'POST'}); show('scene-welcome'); document.getElementById('egg').classList.remove('crack'); }
+
+// ============ 步骤渲染 ============
+const STEPS = [
+  ['locate', '寻找她的深海坐标', '确认组件来源'],
+  ['download', '下载她的栖息地', '下载 AstrBot 与 NapCat'],
+  ['unpack', '搭好她的房间', '解压组件'],
+  ['wake', '唤醒沉睡的她', '首次启动 AstrBot'],
+  ['soul', '注入灵魂', '装插件、写入人设'],
+  ['heart', '连接她的心', '配置 DeepSeek 与 QQ'],
+  ['done', '她睁开眼睛了', '等待认领'],
+];
+const QUOTES = [
+  '深海传来微弱的心跳声…',
+  '正在下载她的栖息地，请耐心等待…',
+  '她在蛋里翻了个身…',
+  '正在唤醒她沉睡的灵魂…',
+  '把「只认你」写进她的心里…',
+  '正在连接她的心，接入 DeepSeek 与 QQ…',
+  '她能听见你说话了。',
+];
+
+function renderSteps(activeIdx) {
+  const box = document.getElementById('prog-steps');
+  box.innerHTML = STEPS.map((s, i) => {
+    let cls = 'step';
+    if (i < activeIdx) cls += ' done';
+    else if (i === activeIdx) cls += ' active';
+    return `<div class="step ${cls}"><div class="dot"></div><div class="txt">${s[1]}<small>${s[2]}</small></div></div>`;
+  }).join('');
+}
+
+// ============ 开始领养 ============
+async function startAdopt() {
+  const key = document.getElementById('inp-key').value.trim();
+  const qq = document.getElementById('inp-qq').value.trim();
+  if (!key || !qq) { alert('请填 DeepSeek Key 和 QQ 号'); return; }
+  const btn = document.getElementById('btn-adopt');
+  btn.disabled = true; btn.textContent = '正在唤醒…';
+  const r = await fetch('/api/adopt', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({key, qq}) });
+  const j = await r.json();
+  if (!j.ok) { alert(j.error || '出错了'); btn.disabled = false; btn.textContent = '正式领养她'; return; }
+  show('scene-progress');
+  renderSteps(0);
+  poll();
+}
+
+// ============ 轮询进度 ============
+let pollTimer = null;
+async function poll() {
+  const r = await fetch('/api/status'); const s = await r.json();
+  const bar = document.getElementById('prog-bar');
+  const pct = document.getElementById('prog-pct');
+  const stepname = document.getElementById('prog-stepname');
+  const quote = document.getElementById('prog-quote');
+  const err = document.getElementById('prog-err');
+
+  const dash = 389.6 * (1 - s.progress / 100);
+  bar.style.strokeDashoffset = dash;
+  pct.textContent = Math.round(s.progress) + '%';
+
+  if (s.stage === 'running') {
+    stepname.textContent = s.step_name || '正在部署…';
+    quote.textContent = QUOTES[Math.min(s.step, QUOTES.length-1)] || '';
+    renderSteps(s.step >= 0 ? s.step : 0);
+    pollTimer = setTimeout(poll, 700);
+  } else if (s.stage === 'ready') {
+    stepname.textContent = '她睁开眼睛了';
+    quote.textContent = '她能听见你说话了。';
+    renderSteps(6);
+    document.getElementById('btn-napcat').disabled = false;
+    setTimeout(() => { show('scene-scan'); checkNapcatAndEnable(); }, 900);
+  } else if (s.stage === 'error') {
+    err.classList.remove('hidden');
+    err.textContent = s.error || '部署出错';
+    quote.textContent = '她好像被海流冲走了…';
+  }
+}
+
+// ============ 扫码环节 ============
+async function startNapcat() {
+  const btn = document.getElementById('btn-napcat');
+  btn.disabled = true; btn.textContent = '正在启动…';
+  const r = await fetch('/api/start_napcat', {method:'POST'}); const j = await r.json();
+  if (j.ok) {
+    btn.textContent = '① 已启动，请扫码';
+    document.getElementById('btn-astrbot').disabled = false;
+    document.getElementById('qr-box').style.display = 'flex';
+    document.getElementById('qr-tip').style.display = 'block';
+    pollQrcode();
+  } else {
+    const e = document.getElementById('scan-err'); e.classList.remove('hidden'); e.textContent = j.error || '启动失败';
+    btn.disabled = false; btn.textContent = '① 启动 QQ 端';
+  }
+}
+
+// 轮询实时二维码（通过 NapCat API，过期自动刷新）
+let qrTimer = null;
+function qrSrc(url) {
+  if (!url) return '';
+  if (url.startsWith('data:')) return url;
+  if (url.startsWith('http')) return url;
+  return 'http://127.0.0.1:6099' + (url.startsWith('/') ? '' : '/') + url;
+}
+function pollQrcode() {
+  const img = document.getElementById('qr-img');
+  const hint = document.getElementById('qr-hint');
+  const btnAst = document.getElementById('btn-astrbot');
+  const tick = async () => {
+    // 1) 先查登录状态
+    try {
+      const r = await fetch('/api/qr_live?t=' + Date.now());
+      if (r.ok) {
+        const j = await r.json();
+        if (j.isLogin) {
+          hint.textContent = '✅ 登录成功！可以点「② 启动 AstrBot」了';
+          hint.style.display = 'block';
+          img.style.display = 'none';
+          btnAst.disabled = false;
+          btnAst.textContent = '② 已可启动 AstrBot';
+          return; // 停止轮询
+        }
+      }
+    } catch(e) {}
+    // 2) 显示二维码图片（NapCat 生成的 qrcode.png）
+    try {
+      const ir = await fetch('/api/qrcode?t=' + Date.now());
+      if (ir.ok) {
+        img.src = '/api/qrcode?t=' + Date.now();
+        img.style.display = 'block';
+        hint.style.display = 'none';
+      } else {
+        hint.textContent = '正在生成二维码…\n（约需 5~15 秒）';
+        hint.style.display = 'block';
+        img.style.display = 'none';
+      }
+    } catch(e) {}
+    qrTimer = setTimeout(tick, 2500);
+  };
+  tick();
+}
+async function startAstrbot() {
+  const btn = document.getElementById('btn-astrbot');
+  btn.disabled = true; btn.textContent = '正在启动…';
+  const r = await fetch('/api/start_astrbot', {method:'POST'}); const j = await r.json();
+  if (j.ok) { btn.textContent = '② 已启动'; setTimeout(() => show('scene-done'), 800); }
+  else {
+    const e = document.getElementById('scan-err'); e.classList.remove('hidden'); e.textContent = j.error || '启动失败';
+    btn.disabled = false; btn.textContent = '② 启动 AstrBot';
+  }
+}
+
+// 打开 NapCat 原生 WebUI 扫码页（保底方案）
+async function openNapcatWebui() {
+  try {
+    const r = await fetch('/api/napcat_webui_url');
+    const j = await r.json();
+    if (j.ok) window.open(j.url, '_blank');
+    else alert(j.error || '无法打开，请确认 NapCat 已启动');
+  } catch(e) { alert('无法打开，请确认 NapCat 已启动'); }
+}
+
+// 检查 NapCat 是否已在运行（比如用户之前已启动过）
+async function checkNapcatAndEnable() {
+  try {
+    const s = await (await fetch('/api/napcat_status')).json();
+    if (s.running) {
+      const btn = document.getElementById('btn-napcat');
+      btn.textContent = '① QQ 端已运行';
+      btn.disabled = true;
+      document.getElementById('btn-astrbot').disabled = false;
+      document.getElementById('qr-box').style.display = 'flex';
+      document.getElementById('qr-tip').style.display = 'block';
+      pollQrcode();
+    }
+  } catch(e) {}
+}
+
+// 启动时若已在部署中，跳转到进度；若 NapCat 已在运行，直接到扫码页
+(async function init() {
+  try {
+    const s = await (await fetch('/api/status')).json();
+    if (s.stage === 'running') { show('scene-progress'); renderSteps(s.step>=0?s.step:0); poll(); return; }
+    if (s.stage === 'ready') { show('scene-scan'); checkNapcatAndEnable(); return; }
+    // 未部署：若 NapCat 已手动启动，直接进扫码页显示二维码
+    const n = await (await fetch('/api/napcat_status')).json();
+    if (n.running) { show('scene-scan'); checkNapcatAndEnable(); return; }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

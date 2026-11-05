@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深海小鲸 · 在 QQ 里养一只 AI 大肥鱼</title>
+<style>
+  :root {
+    --bg: #08111f;
+    --bg2: #0c1c30;
+    --card: rgba(20, 42, 68, 0.55);
+    --border: rgba(90, 180, 230, 0.18);
+    --cyan: #4fc3f7;
+    --cyan2: #29b6f6;
+    --teal: #2dd4bf;
+    --text: #e8f1f8;
+    --muted: #9db4c8;
+    --bubble-me: #1f6feb;
+    --bubble-you: #142a44;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: radial-gradient(1200px 700px at 70% -10%, #123a63 0%, transparent 55%),
+                radial-gradient(900px 600px at -10% 30%, #0d2a4a 0%, transparent 50%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* 顶部 */
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 0;
+  }
+  .logo { font-size: 20px; font-weight: 700; letter-spacing: .5px; }
+  .logo span { color: var(--cyan); }
+  .tag {
+    font-size: 13px; color: var(--cyan); border: 1px solid var(--border);
+    padding: 5px 14px; border-radius: 999px; background: rgba(79,195,247,.08);
+  }
+
+  /* Hero */
+  .hero { text-align: center; padding: 70px 0 40px; }
+  .hero h1 {
+    font-size: clamp(30px, 5vw, 52px); line-height: 1.25; font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(90deg, var(--cyan), var(--teal));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero .sub { margin-top: 18px; font-size: 18px; color: var(--muted); }
+  .hero .points { margin-top: 14px; font-size: 15px; color: var(--cyan); letter-spacing: 2px; }
+  .cta { margin-top: 34px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 14px 30px; border-radius: 12px; font-size: 16px;
+    font-weight: 600; text-decoration: none; transition: .2s;
+  }
+  .btn-primary { background: linear-gradient(90deg, var(--cyan2), var(--teal)); color: #06202e; box-shadow: 0 8px 24px rgba(41,182,246,.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(41,182,246,.5); }
+  .btn-ghost { border: 1px solid var(--border); color: var(--text); background: rgba(255,255,255,.04); }
+  .btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+  /* 聊天演示 */
+  .demo { margin: 60px auto 0; max-width: 620px; }
+  .demo-title { text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .chat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px; backdrop-filter: blur(6px);
+  }
+  .chat-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--cyan2), var(--teal));
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .chat-name { font-weight: 700; }
+  .chat-name small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .msg { display: flex; margin-bottom: 12px; }
+  .msg.me { justify-content: flex-end; }
+  .bubble {
+    max-width: 76%; padding: 10px 14px; border-radius: 14px; font-size: 15px;
+    background: var(--bubble-you); color: var(--text); position: relative;
+  }
+  .msg.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.you .bubble { border-bottom-left-radius: 4px; }
+
+  /* 状态卡 */
+  .status { margin: 50px auto 0; max-width: 520px; }
+  .status-card {
+    background: linear-gradient(160deg, rgba(20,50,84,.8), rgba(10,26,46,.9));
+    border: 1px solid var(--border); border-radius: 18px; padding: 26px;
+  }
+  .status-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .status-head h3 { font-size: 18px; }
+  .status-head small { color: var(--teal); }
+  .bar { height: 10px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; margin: 6px 0 4px; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--cyan2), var(--teal)); border-radius: 999px; }
+  .intimacy { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+  .stats { display: flex; gap: 18px; margin: 20px 0; flex-wrap: wrap; }
+  .stat { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; }
+  .stat b { display: block; font-size: 20px; color: var(--cyan); }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .mem { font-size: 14px; color: var(--muted); }
+  .mem li { margin: 4px 0; list-style: none; padding-left: 16px; position: relative; }
+  .mem li::before { content: "·"; position: absolute; left: 0; color: var(--teal); }
+
+  /* 特性 */
+  .features { margin: 80px 0; }
+  .sec-title { text-align: center; font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .sec-sub { text-align: center; color: var(--muted); margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 26px; backdrop-filter: blur(6px); transition: .2s;
+  }
+  .card:hover { transform: translateY(-4px); border-color: rgba(90,180,230,.4); }
+  .card .ic { font-size: 30px; margin-bottom: 12px; }
+  .card h3 { font-size: 17px; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: var(--muted); }
+
+  /* 桌宠 */
+  .pet { margin: 80px 0; }
+  .pet-card {
+    max-width: 720px; margin: 0 auto; background: var(--card);
+    border: 1px solid rgba(45,212,191,.25); border-radius: 18px; padding: 32px;
+    text-align: center; backdrop-filter: blur(6px);
+  }
+  .pet-card h3 { font-size: 20px; margin-bottom: 12px; }
+  .pet-card p { font-size: 15px; color: var(--muted); margin-bottom: 8px; }
+  .pet-card .pet-note { font-size: 12px; color: var(--muted); opacity: .75; margin-top: 14px; }
+
+  /* 部署方式 */
+  .deploy { margin: 80px 0; }
+  .deploy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .deploy-card {
+    border: 1px solid var(--border); border-radius: 16px; padding: 30px;
+    background: var(--card); position: relative; overflow: hidden;
+  }
+  .deploy-card .badge {
+    position: absolute; top: 18px; right: 18px; font-size: 12px; color: var(--teal);
+    border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px;
+  }
+  .deploy-card h3 { font-size: 20px; margin-bottom: 6px; }
+  .deploy-card .time { color: var(--cyan); font-size: 14px; margin-bottom: 12px; }
+  .deploy-card ul { list-style: none; }
+  .deploy-card li { font-size: 14px; color: var(--muted); padding: 5px 0; padding-left: 20px; position: relative; }
+  .deploy-card li::before { content: "✓"; position: absolute; left: 0; color: var(--teal); }
+
+  /* 步骤 */
+  .steps { margin: 80px 0; }
+  .steps-row { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .step { flex: 1; min-width: 140px; text-align: center; }
+  .step .n {
+    width: 44px; height: 44px; margin: 0 auto 10px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan2), var(--teal)); color: #06202e;
+    font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center;
+  }
+  .step b { font-size: 15px; }
+  .step p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* 结尾 CTA */
+  .final { text-align: center; margin: 90px 0 60px; }
+  .final h2 { font-size: 26px; margin-bottom: 10px; }
+  .final p { color: var(--muted); margin-bottom: 28px; }
+
+  footer { text-align: center; padding: 30px 0; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 720px) {
+    .grid, .deploy-grid { grid-template-columns: 1fr; }
+    .hero { padding-top: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">深海<span>小鲸</span></div>
+    <div class="tag">零基础 · 5 分钟 · 免费</div>
+  </header>
+
+  <section class="hero">
+    <h1>在 QQ 里<br>养一只<span class="grad">会记住你的 AI 大肥鱼</span></h1>
+    <p class="sub">不是客服，不是工具。她有脾气、有记忆、会傲娇，只认你一个主人。</p>
+    <p class="points">会聊天 · 会记住你 · 越养越黏人</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#deploy">立即开始养</a>
+      <a class="btn btn-ghost" href="#demo">先看看她长啥样</a>
+    </div>
+  </section>
+
+  <section class="demo" id="demo">
+    <p class="demo-title">— 真实聊天记录 · 深海小鲸 —</p>
+    <div class="chat">
+      <div class="chat-head">
+        <div class="avatar">🐋</div>
+        <div class="chat-name">深海小鲸 <small>在线</small></div>
+      </div>
+      <div class="msg you"><div class="bubble">在吗</div></div>
+      <div class="msg me"><div class="bubble">哼，刚睡醒。干嘛啦？</div></div>
+      <div class="msg you"><div class="bubble">今天被老板骂了，好烦</div></div>
+      <div class="msg me"><div class="bubble">……啧，谁啊，报名字，我游上去咬他一口。</div></div>
+      <div class="msg you"><div class="bubble">你好可爱</div></div>
+      <div class="msg me"><div class="bubble">才、才没有可爱！你少来这套。</div></div>
+      <div class="msg you"><div class="bubble">你现在对我好感度多少</div></div>
+      <div class="msg me"><div class="bubble">……六十二。够高了吧，别得寸进尺。</div></div>
+    </div>
+  </section>
+
+  <section class="status">
+    <div class="status-card">
+      <div class="status-head">
+        <div class="avatar">🐋</div>
+        <h3>深海小鲸 · 养成状态卡 <small>好感度 62</small></h3>
+      </div>
+      <div class="bar"><i style="width:62%"></i></div>
+      <div class="intimacy"><span>陌生人 0</span><span>亲近 100</span></div>
+      <div class="stats">
+        <div class="stat"><b>17</b><span>投喂次数</span></div>
+        <div class="stat"><b>小鱼干</b><span>最爱食物</span></div>
+        <div class="stat"><b>3 件</b><span>她记得你的事</span></div>
+      </div>
+      <ul class="mem">
+        <li>你上周说过在赶论文，她今天还问你写完了没</li>
+        <li>你喜欢叫她"小鲸"，她嘴上嫌弃但默认了</li>
+        <li>你最讨厌香菜，她偷偷记住了</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="features">
+    <h2 class="sec-title">她凭什么值得你养</h2>
+    <p class="sec-sub">三个理由，够不够</p>
+    <div class="grid">
+      <div class="card">
+        <div class="ic">🎭</div>
+        <h3>有性格</h3>
+        <p>傲娇、可爱、会轻怼你，但点到为止。不是套模板的机器回复，每句话都不一样。</p>
+      </div>
+      <div class="card">
+        <div class="ic">🧠</div>
+        <h3>有记忆</h3>
+        <p>你说过的小事她会记住，下次还会翻出来。三天后她还在惦记你"辞职"那件事。</p>
+      </div>
+      <div class="card">
+        <div class="ic">❤️</div>
+        <h3>能养成</h3>
+        <p>投喂、抚摸、陪聊都会涨好感度。越养越黏人，而且只认你一个主人。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pet">
+    <h2 class="sec-title">养到 60 分，她会游到你的桌面</h2>
+    <p class="sec-sub">好感度解锁桌宠——退出 QQ，她也在</p>
+    <div class="pet-card">
+      <h3>桌面上的大肥鱼</h3>
+      <p>好感度养到 60，她就能"游"到你的电脑桌面，变成一个常驻桌宠：待机呼吸、打瞌睡、玩魔方、吃火锅、点击 Q 弹、拖拽甩抛……退出 QQ 也能继续陪着你聊天。</p>
+      <div class="cta"><a class="btn btn-primary" href="../05-桌宠演示/桌宠.html" target="_blank">体验桌宠演示</a></div>
+      <p class="pet-note">桌宠形象采用开源插件 dsh-pet（大肥鱼 · 鲸鱼娘）｜CC BY-NC-SA 4.0 · 非商业 · 需署名</p>
+    </div>
+  </section>
+
+  <section class="deploy" id="deploy">
+    <h2 class="sec-title">两条路，选一条</h2>
+    <p class="sec-sub">都不会编程也能搞定</p>
+    <div class="deploy-grid">
+      <div class="deploy-card">
+        <span class="badge">推荐新手</span>
+        <h3>电脑版</h3>
+        <div class="time">约 5 分钟</div>
+        <ul>
+          <li>双击一键脚本，自动下载+配置</li>
+          <li>扫码登录 QQ 小号</li>
+          <li>粘贴 DeepSeek Key</li>
+          <li>完成</li>
+        </ul>
+      </div>
+      <div class="deploy-card">
+        <span class="badge">24h 在线</span>
+        <h3>手机 / 平板版</h3>
+        <div class="time">约 15 分钟</div>
+        <ul>
+          <li>安装 DSHA（安卓 App）</li>
+          <li>跑一条安装脚本</li>
+          <li>省电设无限制 + 锁定后台</li>
+          <li>插电即 24 小时在线</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <h2 class="sec-title">从 0 到养上，只要 4 步</h2>
+    <div class="steps-row">
+      <div class="step"><div class="n">1</div><b>注册小号</b><p>QQ 小号 + DeepSeek Key</p></div>
+      <div class="step"><div class="n">2</div><b>一键部署</b><p>双击脚本，5 分钟</p></div>
+      <div class="step"><div class="n">3</div><b>扫码上线</b><p>QQ 小号登录，她活了</p></div>
+      <div class="step"><div class="n">4</div><b>开始养她</b><p>投喂、摸摸、涨好感</p></div>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2>别让你的鱼，还没出生就沉在海底</h2>
+    <p>5 分钟，几块钱，换一个会记住你的存在。</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#deploy">现在就开始养</a>
+    </div>
+  </section>
+
+  <footer>
+    深海小鲸 · 养成计划 &nbsp;|&nbsp; 基于 NapCat + AstrBot + DeepSeek &nbsp;|&nbsp; 免费开源，仅供学习交流
+  </footer>
+
+</div>
+</body>
+</html>

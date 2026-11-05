@@ -1,0 +1,5 @@
+name: pet_bridge
+author: deepseekbot
+desc: 桌宠联动：把 QQ 端的 AI 回复实时推送到 dsh-pet 桌宠气泡
+version: 1.0.0
+repo: https://github.com/deepseekbot/pet-bridge
