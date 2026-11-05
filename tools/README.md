@@ -60,3 +60,17 @@ python video_peek.py 6 0.6 --push   # 顺便推到平板，让 bot 直接读文�
 > 「截图间隔至少 1.5 秒，失败就等 2 秒再试；别在视频播放时连续截图。」
 
 Android 的限流是 1 秒 1 次，**降到 1.5 秒间隔就不会撞墙**。这不用改代码，改 prompt 就行。
+
+---
+
+## 平板端方案（不需要电脑）
+
+如果 bot 就跑在安卓平板上，可以用 **[`android/`](android/)** 里的方案：
+Termux 装 adb → 让平板连自己 → 获得 shell 权限 → 后台服务持续刷新画面。
+
+- 常驻服务每 3 秒刷新 `/sdcard/Pictures/live.jpg`
+- bot 写 `peek_request` 就生成 6 帧拼图
+- bot 只需**读文件**，不需要执行命令
+
+详见 [`android/README.md`](android/README.md)。
+
