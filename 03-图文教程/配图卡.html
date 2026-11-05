@@ -113,6 +113,23 @@
   }
   .foot b{color:var(--teal);font-weight:700}
 </style>
+<script>
+  // 访问 配图卡.html#card-N 时只显示那一张卡（便于截图 / 无头浏览器导出）
+  window.addEventListener('DOMContentLoaded', () => {
+    const m = (location.hash || '').match(/card-(\d)/);
+    if (!m) return;
+    const keep = 'card-' + m[1];
+    document.querySelectorAll('.card').forEach(c => {
+      if (c.id !== keep) c.style.display = 'none';
+    });
+    document.querySelectorAll('.hint').forEach(h => { h.style.display = 'none'; });
+    document.body.style.padding = '0';
+    document.body.style.gap = '0';
+    document.body.style.background = '#071626';
+    const card = document.getElementById(keep);
+    if (card) { card.style.borderRadius = '0'; card.style.boxShadow = 'none'; }
+  });
+</script>
 </head>
 <body>
 
