@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>深海小鲸 · 配图卡（可直接截图）</title>
+<style>
+  :root{
+    --deep:#081524; --deep2:#0e2a42; --teal:#7ff0e0; --cyan:#63b3ed;
+    --text:#eaf6ff; --dim:#8fb3cc; --pink:#ffb3c1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#050d16; font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    padding:40px 20px 80px; display:flex; flex-direction:column; align-items:center; gap:36px;
+  }
+  .hint{color:#5b7c96;font-size:13px;text-align:center;line-height:1.9;max-width:700px}
+  .hint b{color:var(--teal)}
+
+  /* 卡片：小红书竖版 3:4 */
+  .card{
+    width:750px; height:1000px; border-radius:28px; position:relative; overflow:hidden;
+    background:linear-gradient(165deg,#0d2137 0%,#071626 55%,#040d17 100%);
+    box-shadow:0 24px 60px rgba(0,0,0,.6); display:flex; flex-direction:column;
+    padding:56px 52px; color:var(--text);
+  }
+  /* 深海光斑 */
+  .card::before{
+    content:''; position:absolute; width:620px; height:620px; border-radius:50%;
+    background:radial-gradient(circle,rgba(127,240,224,.16),transparent 68%);
+    top:-260px; right:-220px; pointer-events:none;
+  }
+  .card::after{
+    content:''; position:absolute; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle,rgba(99,179,237,.13),transparent 70%);
+    bottom:-240px; left:-200px; pointer-events:none;
+  }
+  .tag{
+    display:inline-block; align-self:flex-start; font-size:15px; letter-spacing:2px;
+    color:var(--teal); border:1px solid rgba(127,240,224,.35); border-radius:999px;
+    padding:6px 18px; margin-bottom:26px; background:rgba(127,240,224,.06);
+  }
+  h2{font-size:44px; line-height:1.32; font-weight:800; letter-spacing:-.5px; z-index:1}
+  h2 em{font-style:normal; color:var(--teal)}
+  .sub{font-size:20px; color:var(--dim); margin-top:16px; line-height:1.75; z-index:1}
+  .stage{flex:1; display:flex; align-items:center; justify-content:center; z-index:1; position:relative}
+
+  /* 聊天气泡 */
+  .bubbles{width:100%; display:flex; flex-direction:column; gap:18px}
+  .msg{display:flex; gap:12px; align-items:flex-start}
+  .msg.me{flex-direction:row-reverse}
+  .avatar{
+    width:44px;height:44px;border-radius:50%;flex:0 0 44px;
+    background:linear-gradient(135deg,#7ff0e0,#63b3ed); display:flex;align-items:center;
+    justify-content:center;font-size:22px;
+  }
+  .bubble{
+    max-width:78%; padding:16px 20px; border-radius:16px; font-size:19px; line-height:1.7;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1);
+  }
+  .msg.me .bubble{background:linear-gradient(135deg,#2f7fb8,#25678f); border-color:transparent}
+  .bubble .hintline{color:var(--pink); font-size:16px; display:block; margin-top:8px}
+
+  /* 状态卡 */
+  .stat{
+    width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(127,240,224,.22);
+    border-radius:22px; padding:34px 32px;
+  }
+  .stat .title{font-size:17px; color:var(--teal); letter-spacing:1px; margin-bottom:8px}
+  .stat .num{font-size:76px; font-weight:900; line-height:1.1}
+  .stat .num small{font-size:26px; color:var(--dim); font-weight:600}
+  .bar{height:14px;border-radius:999px;background:rgba(255,255,255,.1);margin:20px 0 26px;overflow:hidden}
+  .bar i{display:block;height:100%;width:64%;border-radius:999px;background:linear-gradient(90deg,#7ff0e0,#63b3ed)}
+  .rows{display:flex;flex-direction:column;gap:14px;font-size:19px}
+  .rows div{display:flex;justify-content:space-between;color:var(--dim)}
+  .rows b{color:var(--text);font-weight:700}
+
+  /* 终端 */
+  .term{
+    width:100%; background:#03101c; border:1px solid rgba(127,240,224,.2); border-radius:16px;
+    padding:26px 24px; font-family:Consolas,"Courier New",monospace; font-size:17px; line-height:2.1;
+    color:#9fd6c8; box-shadow:inset 0 0 50px rgba(0,0,0,.6);
+  }
+  .term .ok{color:#7ff0e0}
+  .term .dim{color:#5b7c96}
+  .term .cur{display:inline-block;width:9px;height:19px;background:#7ff0e0;vertical-align:-3px;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* 二维码 */
+  .qrwrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+  .qr{
+    width:300px;height:300px;border-radius:20px;background:#fff;display:grid;
+    grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);gap:4px;padding:16px;
+  }
+  .qr i{background:#0b1b2b;border-radius:2px}
+  .qr i.w{background:#fff}
+
+  /* 桌宠 */
+  .petbox{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .petbox img{height:290px;filter:drop-shadow(0 18px 34px rgba(0,0,0,.55))}
+  .speech{
+    background:#fff;color:#123;border-radius:18px;padding:16px 22px;font-size:19px;
+    font-weight:600;position:relative;max-width:420px;text-align:center;line-height:1.6;
+  }
+  .speech::after{
+    content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%) rotate(45deg);
+    width:20px;height:20px;background:#fff;border-radius:3px;
+  }
+
+  .foot{
+    z-index:1; display:flex; align-items:center; justify-content:space-between;
+    margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,.09);
+    font-size:16px; color:var(--dim); letter-spacing:1px;
+  }
+  .foot b{color:var(--teal);font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="hint">
+  <b>使用说明</b>：浏览器打开本页 → 用截图工具（或 F12 元素截图）逐张截取卡片 →
+  直接发小红书 / 公众号。<br>
+  卡片尺寸 750×1000（3:4，小红书竖版标准）。真实截图可替换卡片里的示意内容，更有说服力。
+</div>
+
+<!-- ============ 卡片 1：成品展示 ============ -->
+<section class="card" id="card-1">
+  <span class="tag">成品展示</span>
+  <h2>她在 QQ 里说话<br>回复会<em>跳到桌面上</em></h2>
+  <div class="sub">关掉 QQ 也还在，就趴在你屏幕角落</div>
+
+  <div class="stage">
+    <div class="bubbles">
+      <div class="msg me">
+        <div class="avatar">🙂</div>
+        <div class="bubble">在干嘛呢</div>
+      </div>
+      <div class="msg">
+        <div class="avatar">🐋</div>
+        <div class="bubble">
+          刚在打盹……被你吵醒了。
+          <span class="hintline">（气泡同步弹在桌面右下角）</span>
+        </div>
+      </div>
+      <div class="msg me">
+        <div class="avatar">🙂</div>
+        <div class="bubble">投喂小鱼干</div>
+      </div>
+      <div class="msg">
+        <div class="avatar">🐋</div>
+        <div class="bubble">……放那儿吧，我慢慢吃。<span class="hintline">好感度 +5</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>深海小鲸 · 养成计划</span><b>① 跨端陪伴</b></div>
+</section>
+
+<!-- ============ 卡片 2：状态卡 ============ -->
+<section class="card" id="card-2">
+  <span class="tag">养成系统</span>
+  <h2>你和她的关系<br>是<em>看得见的数值</em></h2>
+  <div class="sub">聊天 +1~3 · 投喂 +5 · 冷落她 −1/天</div>
+
+  <div class="stage">
+    <div class="stat">
+      <div class="title">深海小鲸 · 状态卡</div>
+      <div class="num">64 <small>/ 100</small></div>
+      <div class="bar"><i></i></div>
+      <div class="rows">
+        <div><span>当前关系</span><b>亲近 · 她会主动黏你</b></div>
+        <div><span>已投喂</span><b>12 次</b></div>
+        <div><span>桌宠</span><b>已解锁 🐾</b></div>
+        <div><span>她记得</span><b>你怕黑、爱吃辣</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>0 陌生 → 40 熟悉 → 60 亲近</span><b>② 好感度</b></div>
+</section>
+
+<!-- ============ 卡片 3：部署 ============ -->
+<section class="card" id="card-3">
+  <span class="tag">一键部署</span>
+  <h2>双击脚本<br>填两样，剩下的<em>它自己干</em></h2>
+  <div class="sub">下载 · 解压 · 装插件 · 配模型 · 写人设</div>
+
+  <div class="stage">
+    <div class="term">
+      <div class="dim">D:\deepseekbot\一键部署&gt; 一键部署.bat</div>
+      <div></div>
+      <div class="ok">[1/6] 正在下载组件 ...</div>
+      <div class="ok">[2/6] 解压完成</div>
+      <div class="ok">[3/6] 安装插件 intimacy + pet_bridge</div>
+      <div class="ok">[4/6] 写入 DeepSeek 配置</div>
+      <div class="ok">[5/6] 注入人设（含你的 QQ 号）</div>
+      <div class="ok">[6/6] 完成！请扫码登录</div>
+      <div></div>
+      <div class="dim">正在生成二维码<span class="cur"></span></div>
+    </div>
+  </div>
+
+  <div class="foot"><span>全程约 5 分钟</span><b>③ 零基础</b></div>
+</section>
+
+<!-- ============ 卡片 4：扫码 ============ -->
+<section class="card" id="card-4">
+  <span class="tag">最后一步</span>
+  <h2>扫个码<br>她就<em>活了</em></h2>
+  <div class="sub">用 QQ 小号扫，别用日常号</div>
+
+  <div class="stage">
+    <div class="qrwrap">
+      <div class="qr">
+        <i></i><i></i><i></i><i class="w"></i><i></i><i></i><i class="w"></i><i></i><i></i>
+        <i></i><i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i></i>
+        <i></i><i></i><i></i><i class="w"></i><i></i><i class="w"></i><i class="w"></i><i></i><i class="w"></i>
+        <i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i>
+        <i></i><i class="w"></i><i></i><i class="w"></i><i class="w"></i><i class="w"></i><i></i><i class="w"></i><i></i>
+        <i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i class="w"></i><i class="w"></i>
+        <i></i><i class="w"></i><i class="w"></i><i></i><i></i><i class="w"></i><i></i><i></i><i></i>
+        <i></i><i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i class="w"></i><i class="w"></i><i></i>
+        <i class="w"></i><i></i><i class="w"></i><i></i><i class="w"></i><i></i><i></i><i class="w"></i><i></i>
+      </div>
+      <div class="sub" style="margin:0;font-size:22px">手机 QQ 扫一扫 → 确认登录</div>
+    </div>
+  </div>
+
+  <div class="foot"><span>扫完回 QQ 发「你好」</span><b>④ 活过来</b></div>
+</section>
+
+<!-- ============ 卡片 5：投喂玩法 ============ -->
+<section class="card" id="card-5">
+  <span class="tag">怎么养</span>
+  <h2>投喂一次<br><em>好感 +5</em>，她还会挑食</h2>
+  <div class="sub">讨厌海带和苦瓜 · 最爱小鱼干</div>
+
+  <div class="stage">
+    <div class="bubbles">
+      <div class="msg me">
+        <div class="avatar">🙂</div>
+        <div class="bubble">投喂小鱼干</div>
+      </div>
+      <div class="msg">
+        <div class="avatar">🐋</div>
+        <div class="bubble">又来？你这是把我当储物柜填啊……<span class="hintline">好感度 9 → 14</span></div>
+      </div>
+      <div class="msg me">
+        <div class="avatar">🙂</div>
+        <div class="bubble">摸摸头</div>
+      </div>
+      <div class="msg">
+        <div class="avatar">🐋</div>
+        <div class="bubble">……别摸，头发会乱。<span class="hintline">好感度 14 → 17</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>嘴硬，但数值一直在涨</span><b>⑤ 可玩性</b></div>
+</section>
+
+<!-- ============ 卡片 6：桌宠解锁 ============ -->
+<section class="card" id="card-6">
+  <span class="tag">60 分的彩蛋</span>
+  <h2>是她先开口<br>问你要不要<em>来你身边</em></h2>
+  <div class="sub">不是点按钮解锁，是她自己问的</div>
+
+  <div class="stage">
+    <div class="petbox">
+      <div class="speech">那个……我好像，可以离开深海了。<br>你……想让我去你身边吗？</div>
+      <img src="../06-领养UI/static/img/happy@2x.gif" alt="深海小鲸">
+    </div>
+  </div>
+
+  <div class="foot"><span>回「愿意」，她就游到桌面</span><b>⑥ 情绪价值</b></div>
+</section>
+
+<div class="hint" style="margin-top:20px">
+  图片素材：dsh-pet 鲸鱼娘（CC BY-NC-SA 4.0 · 非商业）<br>
+  溟月 B站@上善无形 ｜ DeepSeek 鲸鱼娘 B站@ZipZipPipe ｜ github.com/PC2005-cloud/dsh-pet
+</div>
+
+</body>
+</html>
