@@ -1,0 +1,13 @@
+# 深海小鲸 · 养成计划 —— 依赖说明
+#
+# 说明：
+#   本项目的大部分脚本只用 Python 标准库（无需安装任何东西）。
+#   唯一的外部依赖是「领养向导 UI」（06-领养UI）用的 Flask。
+#
+#   实际运行时，启动脚本会自动使用 AstrBot 便携版自带的 Python，
+#   那份 Python 已经内置了 Flask，所以普通用户无需执行 pip install。
+#
+#   只有在你用自己的 Python 环境单独跑 06-领养UI 时，才需要：
+#       pip install -r requirements.txt
+
+flask>=3.0
