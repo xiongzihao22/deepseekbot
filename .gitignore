@@ -50,3 +50,8 @@ Desktop.ini
 
 # 工具生成的临时图
 tools/peek.jpg
+
+# 本机人设文件（含真实 QQ 号等隐私，绝不提交）
+AGENTS.md
+*.old
+_build_*.py

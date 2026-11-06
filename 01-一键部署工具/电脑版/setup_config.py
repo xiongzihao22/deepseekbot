@@ -18,14 +18,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import configure
 
 
-def setup_napcat_ws(proj_root: str, owner_qq: str) -> bool:
+def setup_napcat_ws(comp_root: str, owner_qq: str) -> bool:
     """配置 NapCat 反向 WebSocket（连 AstrBot 6199）。"""
-    napcat_dir = os.path.join(proj_root, "NapCat")
+    # 目录名统一小写；Windows 不区分大小写，兼容旧的 NapCat/
+    napcat_dir = os.path.join(comp_root, "napcat")
+    if not os.path.isdir(napcat_dir):
+        napcat_dir = os.path.join(comp_root, "NapCat")
     config_dir = None
-    for root, dirs, _ in os.walk(napcat_dir):
-        if "config" in dirs and "napcat.json" in os.listdir(os.path.join(root, "config")):
-            config_dir = os.path.join(root, "config")
-            break
+    if os.path.isdir(napcat_dir):
+        for root, dirs, _ in os.walk(napcat_dir):
+            if "config" in dirs and "napcat.json" in os.listdir(os.path.join(root, "config")):
+                config_dir = os.path.join(root, "config")
+                break
     if not config_dir:
         print("   [提示] 未找到 NapCat config 目录，跳过（首次登录后可在 WebUI 配置）")
         return False
@@ -67,21 +71,30 @@ def setup_napcat_ws(proj_root: str, owner_qq: str) -> bool:
 
 def main() -> None:
     if len(sys.argv) < 4:
-        print("用法: python setup_config.py <DeepSeek-Key> <主人QQ号> <项目根目录>")
+        print("用法: python setup_config.py <DeepSeek-Key> <主人QQ号> <工具目录> [组件目录]")
+        print("  工具目录：本脚本所在目录（插件在这里）")
+        print("  组件目录：astrbot/ 和 napcat/ 所在目录；不填则同工具目录")
         sys.exit(1)
 
     ds_key = sys.argv[1]
     owner_qq = sys.argv[2]
     proj_root = sys.argv[3].rstrip("\\/")
+    # 组件（astrbot / napcat）可能在项目根，与工具目录不同
+    comp_root = sys.argv[4].rstrip("\\/") if len(sys.argv) > 4 else proj_root
 
-    # 定位 AstrBot 便携版目录
+    # 定位 AstrBot 便携版目录（兼容大小写）
     ab_dir = None
-    for root, dirs, _ in os.walk(os.path.join(proj_root, "AstrBot")):
-        if "launch_backend.py" in os.listdir(root) and "python" in dirs:
-            ab_dir = root
+    for base in (os.path.join(comp_root, "astrbot"), os.path.join(comp_root, "AstrBot")):
+        if not os.path.isdir(base):
+            continue
+        for root, dirs, _ in os.walk(base):
+            if "launch_backend.py" in os.listdir(root) and "python" in dirs:
+                ab_dir = root
+                break
+        if ab_dir:
             break
     if not ab_dir:
-        print("[错误] 未找到 AstrBot 的 backend 目录，请确认已解压。")
+        print(f"[错误] 在 {comp_root} 下未找到 AstrBot 的 backend 目录，请确认已解压。")
         sys.exit(1)
 
     py = os.path.join(ab_dir, "python", "python.exe")
@@ -90,9 +103,12 @@ def main() -> None:
     )
     data_dir = os.path.join(astrbot_root, "data")
 
-    # ---- 1. 首次启动 AstrBot 生成数据目录（若不存在） ----
-    if not os.path.exists(os.path.join(data_dir, "cmd_config.json")):
-        print("[1/4] 首次启动 AstrBot 初始化数据目录 ...")
+    # ---- 1. 首次启动 AstrBot 生成数据目录和数据库 ----
+    # 注意：data_v4.db 比 cmd_config.json 晚创建很多（首次启动要先下载 WebUI，约 50~60 秒），
+    # 原实现只等 cmd_config.json 就杀进程，导致 db 从未生成、人设写不进去。
+    db_file = os.path.join(data_dir, "data_v4.db")
+    if not os.path.exists(db_file):
+        print("[1/4] 首次启动 AstrBot 初始化数据目录（首次需下载 WebUI，约 1 分钟）...")
         env = dict(os.environ)
         env["ASTRBOT_ROOT"] = astrbot_root
         proc = subprocess.Popen(
@@ -102,8 +118,10 @@ def main() -> None:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        for _ in range(90):
-            if os.path.exists(os.path.join(data_dir, "cmd_config.json")):
+        ready = False
+        for _ in range(180):
+            if os.path.exists(db_file):
+                ready = True
                 break
             time.sleep(1)
         # 停止
@@ -112,7 +130,11 @@ def main() -> None:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        print("   数据目录已生成并停止 AstrBot。")
+        if ready:
+            print("   数据目录与数据库已生成，AstrBot 已停止。")
+        else:
+            print("   [警告] 等待超时，data_v4.db 未生成。")
+            print("          人设将稍后写入；如失败，启动一次 AstrBot 后重跑本脚本即可。")
     else:
         print("[1/4] 数据目录已存在，跳过初始化。")
 
@@ -144,7 +166,7 @@ def main() -> None:
 
     # ---- 4. 配置 NapCat 反向 WebSocket ----
     print("[4/5] 配置 NapCat 反向 WebSocket ...")
-    setup_napcat_ws(proj_root, owner_qq)
+    setup_napcat_ws(comp_root, owner_qq)
 
     print("[5/5] 一键部署完成！接下来只需：启动 NapCat 扫码 + 启动 AstrBot。")
 

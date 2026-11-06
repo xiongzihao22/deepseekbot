@@ -62,18 +62,22 @@
 脚本会自动完成剩下的一切：
 
 ```
-下载 NapCat + AstrBot
-  → 解压
-  → 首次启动 AstrBot（生成数据目录）
+下载 NapCat（约 1MB）+ AstrBot（约 180MB）
+  → 解压到项目根目录的 napcat/ 和 astrbot/
+  → 引导你运行 NapCat 安装器（首次会下载内置 QQ，约 300MB）
+  → 首次启动 AstrBot（会下载 WebUI，约 1 分钟）
   → 安装 2 个自研插件（好感度养成 + 桌宠联动）
-  → 写入 DeepSeek 服务商配置
-  → 写入 QQ 平台连接（反向 WebSocket）
-  → 注入人设（含你的 QQ 号）
-  → 写好 NapCat 反向 WS 配置
+  → 写入 DeepSeek 服务商 + QQ 平台连接
+  → 写入人设（含你的 QQ 号）
+  → 配置 NapCat 反向 WebSocket
   → 完成
 ```
 
+> **耗时说明**：整个过程主要花在下载上（组件 + 内置 QQ 约 480MB），
+> 取决于网速，通常 **10~20 分钟**。部署只需做一次。
+
 > 之后每次开电脑，只需双击 `启动AstrBot.bat`（它会同时带起桌宠守护进程）。
+> 另需先双击 `启动NapCat.bat` 扫码登录。
 
 ### 想更傻瓜：用领养向导
 
